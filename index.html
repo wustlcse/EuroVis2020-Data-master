@@ -154,7 +154,10 @@
                 .attr("y", 3)
                 .style("text-anchor", "middle")
                 .attr("dy", ".08em")
-                .text(function(d) { return d.name; });
+                .text(function(d)
+                {
+                    return "A " + d.name.replace ( /[^\d.]/g, '' );
+                });
 
             function tick() {
                 path.attr("d", function(d) {
