@@ -131,7 +131,7 @@
                 .enter().append("svg:marker")
                 .attr("id", String)
                 .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 25)
+                .attr("refX", 30)
                 .attr("refY", 0)
                 .attr("markerWidth", 6)
                 .attr("markerHeight", 6)
@@ -160,9 +160,9 @@
 
                     if (articles[article_number]['RelevantToTask'] === 'yes')
                      {
-                         return 25;
+                         return 18;
                      }
-                    return 15;
+                    return 12;
                 })
                 .style("stroke", function (d)
                 {
