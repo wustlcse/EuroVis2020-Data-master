@@ -173,7 +173,19 @@
                         return "yellow";
                     }
                     return 'black';
-                })
+                }).style("fill",function (d)
+            {
+              if(d.index === 0)
+              {
+                  return "red";
+              }
+              else if(d.index === force.nodes().length-1)
+              {
+                  return "#999";
+              }
+              return "white";
+            })
+
 
             node.append("text")
                 .attr("y", 3)
@@ -182,7 +194,8 @@
                 .text(function(d)
                 {
                     return "A " + d.name.replace ( /[^\d.]/g, '' );
-                });
+                })
+                .style("fill","black");
 
             function tick() {
                 path.attr("d", function(d) {
