@@ -83,7 +83,7 @@
                 previous_participant = current_participant;
             }
             //console.log(result);
-            let current_view = result[Object.keys(result)[0]];
+            var current_view = result[Object.keys(result)[0]];
             for(let i = 0; i < current_view.length-1; ++i)
             {
                 links.push
@@ -104,11 +104,15 @@
                 link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
                 link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
             });
+            console.log("data format")
+            console.log(current_view);
+            console.log(links);
             console.log(nodes);
 
 
+
             var width = 1000,
-                height = 800;
+                height = 1000;
 
             var force = d3.layout.force()
                 .nodes(d3.values(nodes))
@@ -118,6 +122,8 @@
                 .charge(-800)
                 .on("tick", tick)
                 .start();
+
+            console.log(force.nodes());
 
             var svg = d3.select("#content")
                 .append("div")
@@ -149,10 +155,33 @@
                 .append("svg:path")
                 .attr("d", "M0,-5L10,0L0,5");
 
+            var division_n = 10;
+
             var path = svg.append("svg:g").selectAll("path")
                 .data(force.links())
                 .enter().append("svg:path")
-                .attr("class", "link")
+                .attr("class", function (d)
+                {
+                    let source_group = '';
+                    let target_group = '';
+                    for (let i = 1 ; i < division_n+2; ++i)
+                    {
+                        if(parseInt(d.source.index) < i*Math.floor(force.nodes().length/division_n))
+                        {
+                            source_group = "group" + i.toString();
+                            break;
+                        }
+                    }
+                    for (let i = 1 ; i < division_n+2; ++i)
+                    {
+                        if(parseInt(d.target.index) < i*Math.floor(force.nodes().length/division_n))
+                        {
+                            target_group = "group" + i.toString();
+                            break;
+                        }
+                    }
+                    return "link " + (source_group+target_group);
+                })
                 .attr("marker-end", "url(#end)");
 
             var node = svg.selectAll(".node")
@@ -162,12 +191,24 @@
                 .call(force.drag);
 
             node.append("circle")
-                .attr("class","circle")
+                .attr("class",function (d){
+
+                    for (let i = 1 ; i < division_n+2; ++i)
+                    {
+
+                        if(d.index < i*Math.floor(force.nodes().length/division_n))
+                        {
+
+                            return "group" + i.toString();
+                        }
+                        else{
+                            continue;
+                        }
+                    }
+                })
                 .attr("r", function (d)
                 {
                     let article_number = parseInt(d.name.replace ( /[^\d.]/g, '' ));
-                    console.log(article_number);
-
                     if (articles[article_number]['RelevantToTask'] === 'yes')
                      {
                          return 18;
@@ -177,24 +218,44 @@
                 .style("stroke", function (d)
                 {
                     let article_number = parseInt(d.name.replace ( /[^\d.]/g, '' ));
-                    console.log(article_number);
                     if (articles[article_number]['RelevantToTask'] === 'yes')
                     {
                         return "yellow";
                     }
                     return 'black';
-                }).style("fill",function (d)
+                })
+                .style("fill",function (d)
             {
-              if(d.index === 0)
+                let article_number = parseInt(d.name.replace ( /[^\d.]/g, '' ));
+                let first_article_number = parseInt(current_view[0]['ActionParameters'].replace ( /[^\d.]/g, '' ));
+                let last_article_number = parseInt(current_view[current_view.length-1]['ActionParameters'].replace ( /[^\d.]/g, '' ));
+              if(article_number === first_article_number)
               {
                   return "red";
               }
-              else if(d.index === force.nodes().length-1)
+              else if(article_number === last_article_number)
               {
-                  return "#999";
+                  return "purple";
               }
               return "white";
+            }).on("mouseover", function (d)
+            {
+                let current_class = d3.select(this).attr("class");
+                let next_class = "group" + (parseInt(current_class[current_class.length-1])+1).toString();
+                $('circle').css("opacity",'0.2');
+                $('path').css("opacity",'0.2');
+                $("." + current_class).css("opacity", "1");
+                $('.' + current_class + current_class).css("opacity",'1');
+                $("." + next_class).delay(100).fadeOut().fadeIn('slow');
+                console.log(current_class);
+                console.log(next_class);
+                $("." + next_class + next_class).delay(100).fadeOut().fadeIn('slow');
             })
+                .on("mouseout", function (d)
+                {
+                    $('circle').css("opacity",'1');
+                    $('path').css("opacity",'1');
+                })
 
 
             node.append("text")
@@ -203,7 +264,7 @@
                 .attr("dy", ".08em")
                 .text(function(d)
                 {
-                    return "A " + d.name.replace ( /[^\d.]/g, '' );
+                    return "A" + d.name.replace ( /[^\d.]/g, '' );
                 })
                 .style("fill","black");
 
